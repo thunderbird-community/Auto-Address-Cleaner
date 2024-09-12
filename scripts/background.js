@@ -54,17 +54,19 @@ async function stripDisplayName(addresses) {
         // The parsed string could have multiple entries, each entry being a
         // ParsedMailbox (https://webextension-api.thunderbird.net/en/stable/messengerUtilities.html#parsedmailbox).
         for (let entry of parsed) {
-            if (entry.name == entry.email) {
-                // This may be a list. Try to expand it and add the emails addr.
-                let members = await expandListToEmails(entry.name);
-                if (members) {
-                    emails.push(...members);
-                } else {
-                    // Did not find the list, keep it as it is.
-                    emails.push(`${entry.name} <${entry.email}>`);
-                }
+            if (entry.email.includes("@")) {
+                emails.push(entry.email);
+                continue;
+            }
+
+            // The email did not include an @-tag. This may be a list.
+            // Try to expand it and add the emails addr.
+            let members = await expandListToEmails(entry.name);
+            if (members) {
+                emails.push(...members);
             } else {
-                emails.push(entry.email)
+                // Did not find the list, keep it as it is.
+                emails.push(`${entry.name} <${entry.email}>`);
             }
         }
     }
